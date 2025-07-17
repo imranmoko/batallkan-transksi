@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            width: 350px;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            margin: 10px 0 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #4facfe;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #00c6fb;
+        }
+
+        .status {
+            margin-top: 15px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .success {
+            color: #fff;
+            background: #28a745;
+        }
+
+        .error {
+            color: #fff;
+            background: #dc3545;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Ubah Token Telegram</h2>
+        <form id="configForm">
+            <label for="token">Telegram Token:</label>
+            <input type="text" id="token" required>
+
+            <label for="chat_id">Telegram Chat ID:</label>
+            <input type="text" id="chat_id" required>
+
+            <button type="submit">Simpan</button>
+        </form>
+        
+        <p id="status" class="status"></p>
+    </div>
+
+    <script>
+        // Ambil data konfigurasi dari server PHP
+        fetch('get_config.php')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('token').value = data.TELEGRAM_TOKEN;
+                document.getElementById('chat_id').value = data.TELEGRAM_CHAT_ID;
+            });
+
+        // Simpan konfigurasi ke server PHP
+        document.getElementById('configForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const newConfig = {
+                TELEGRAM_TOKEN: document.getElementById('token').value,
+                TELEGRAM_CHAT_ID: document.getElementById('chat_id').value
+            };
+
+            fetch('update_config.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newConfig)
+            })
+            .then(response => response.json())
+            .then(data => {
+                let statusElement = document.getElementById('status');
+                statusElement.innerText = data.message || data.error;
+                statusElement.className = 'status ' + (data.message ? 'success' : 'error');
+            })
+            .catch(error => {
+                let statusElement = document.getElementById('status');
+                statusElement.innerText = 'Gagal menyimpan konfigurasi!';
+                statusElement.className = 'status error';
+                console.error(error);
+            });
+        });
+    </script>
+
+</body>
+</html>
